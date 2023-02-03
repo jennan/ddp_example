@@ -30,6 +30,7 @@ which python
 export NCCL_DEBUG=INFO 
 
 # start training script
+# TODO pass the number of available CPUs from Slurm
 torchrun \
     --standalone \
     --nnodes=1 \

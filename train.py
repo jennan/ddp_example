@@ -107,6 +107,18 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    print(
+        "### Worker info ###",
+        f"local rank: {os.environ['LOCAL_RANK']}",
+        f"local world size: {os.environ['LOCAL_WORLD_SIZE']}",
+        f"rank: {os.environ['RANK']}",
+        f"world size: {os.environ['WORLD_SIZE']}",
+        f"master address: {os.environ['MASTER_ADDR']}",
+        f"master port: {os.environ['MASTER_PORT']}",
+        sep="\n",
+        flush=True,
+    )
+
     init_process_group(backend="nccl")
 
     dataset, model, optimizer = load_train_objs()
