@@ -5,8 +5,8 @@
 #SBATCH --gpus-per-node=A100:4
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32GB
-#SBATCH --output=logs/%x_%j.out
-#SBATCH --error=logs/%x_%j.err
+#SBATCH --output=logs/%j_%x.out
+#SBATCH --error=logs/%j_%x.err
 
 # load modules
 module purge
@@ -27,8 +27,4 @@ conda activate ./venv
 which python
 
 # start training script
-torchrun \
-    --standalone \
-    --nnodes=1 \
-    --nproc_per_node=4 \  # TODO replace with number from SLURM
-    train.py
+torchrun --standalone --nnodes=1 --nproc_per_node=4 train.py

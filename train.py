@@ -44,11 +44,14 @@ class Trainer:
         self.optimizer.step()
 
     def _run_epoch(self, epoch):
-        b_sz = len(next(iter(self.train_data))[0])
-        print(
-            f"[GPU{self.gpu_id}] Epoch {epoch} | Batchsize: {b_sz} | "
-            f"Steps: {len(self.train_data)}"
-        )
+        batch_size = len(next(iter(self.train_data))[0])
+        if self.gpu_id == 0:
+            print(
+                f"[GPU{self.gpu_id}] Epoch {epoch} "
+                f"| Batchsize: {batch_size} "
+                f"| Steps: {len(self.train_data)}"
+            )
+
         self.train_data.sampler.set_epoch(epoch)
         for source, targets in self.train_data:
             source = source.to(self.gpu_id)
@@ -56,6 +59,7 @@ class Trainer:
             self._run_batch(source, targets)
 
     def _save_checkpoint(self, epoch):
+        assert self.gpu_id == 0, "this should not run on another rank than 0"
         ckp = self.model.module.state_dict()
         PATH = "checkpoint.pt"
         torch.save(ckp, PATH)
@@ -69,8 +73,8 @@ class Trainer:
 
 
 def load_train_objs():
-    train_set = MyTrainDataset(2048)  # load your dataset
-    model = torch.nn.Linear(20, 1)  # load your model
+    train_set = MyTrainDataset(2048)
+    model = torch.nn.Linear(20, 1)
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
     return train_set, model, optimizer
 
