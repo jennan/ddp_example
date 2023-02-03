@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=32GB
 #SBATCH --output=logs/%j_%x.out
-#SBATCH --error=logs/%j_%x.err
+#SBATCH --error=logs/%j_%x.out
 
 # load modules
 module purge
@@ -26,5 +26,12 @@ conda deactivate
 conda activate ./venv
 which python
 
+# optional, used to peek under NCCL's hood
+export NCCL_DEBUG=INFO 
+
 # start training script
-torchrun --standalone --nnodes=1 --nproc_per_node=4 train.py
+torchrun \
+    --standalone \
+    --nnodes=1 \
+    --nproc_per_node=4 \
+    train.py

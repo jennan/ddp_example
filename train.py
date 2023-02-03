@@ -89,17 +89,6 @@ def prepare_dataloader(dataset: Dataset, batch_size: int):
     )
 
 
-def main(
-    rank: int, world_size: int, save_every: int, total_epochs: int, batch_size: int
-):
-    init_process_group(backend="nccl", rank=rank, world_size=world_size)
-    dataset, model, optimizer = load_train_objs()
-    train_data = prepare_dataloader(dataset, batch_size)
-    trainer = Trainer(model, train_data, optimizer, rank, save_every)
-    trainer.train(total_epochs)
-    destroy_process_group()
-
-
 if __name__ == "__main__":
     import argparse
 
@@ -118,6 +107,14 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    init_process_group(backend="nccl")
+
+    dataset, model, optimizer = load_train_objs()
+    train_data = prepare_dataloader(dataset, args.batch_size)
+
     local_rank = int(os.environ["LOCAL_RANK"])
-    world_size = int(os.environ["WORLD_SIZE"])
-    main(local_rank, world_size, args.save_every, args.total_epochs, args.batch_size)
+    trainer = Trainer(model, train_data, optimizer, local_rank, args.save_every)
+
+    trainer.train(args.total_epochs)
+
+    destroy_process_group()
