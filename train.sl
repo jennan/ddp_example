@@ -33,5 +33,5 @@ export NCCL_DEBUG=INFO
 torchrun \
     --standalone \
     --nnodes=1 \
-    --nproc_per_node=4 \
+    --nproc_per_node=${SLURM_GPUS_PER_NODE#*:} \
     train.py
