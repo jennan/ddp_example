@@ -1,4 +1,5 @@
 import os
+import argparse
 
 import torch
 import torch.nn.functional as F
@@ -6,6 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel
 from torch.distributed import init_process_group, destroy_process_group
+from torch.distributed.elastic.multiprocessing.errors import record
 
 
 class MyTrainDataset(Dataset):
@@ -89,9 +91,8 @@ def prepare_dataloader(dataset: Dataset, batch_size: int):
     )
 
 
-if __name__ == "__main__":
-    import argparse
-
+@record
+def main():
     parser = argparse.ArgumentParser(description="simple distributed training job")
     parser.add_argument(
         "--total_epochs", default=10, type=int, help="Total epochs to train the model"
@@ -131,3 +132,7 @@ if __name__ == "__main__":
     trainer.train(args.total_epochs)
 
     destroy_process_group()
+
+
+if __name__ == "__main__":
+    main()
