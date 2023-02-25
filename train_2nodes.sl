@@ -27,16 +27,25 @@ export NCCL_DEBUG=INFO
 
 # start training script
 
-MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
-MASTER_PORT=$(python -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()')
+export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
+export MASTER_PORT=$(python -c 'import socket; s=socket.socket(); s.bind(("", 0)); print(s.getsockname()[1]); s.close()')
 
 echo "rendez-vous at $MASTER_ADDR:$MASTER_PORT"
 
 # TODO pass the number of available CPUs from Slurm
-srun torchrun \
-    --rdzv_id=$SLURM_JOB_ID \
-    --rdzv_backend=c10d \
-    --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
+# srun torchrun \
+#     --rdzv_id=$SLURM_JOB_ID \
+#     --rdzv_backend=c10d \
+#     --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
+#     --nnodes=$SLURM_JOB_NUM_NODES \
+#     --nproc_per_node=${SLURM_GPUS_PER_NODE#*:} \
+#     train.py
+
+srun bash -c 'python -m torch.distributed.launch \
+    --use_env \
+    --node_rank=$SLURM_PROCID \
+    --master_addr=$MASTER_ADDR \
+    --master_port=$MASTER_PORT \
     --nnodes=$SLURM_JOB_NUM_NODES \
     --nproc_per_node=${SLURM_GPUS_PER_NODE#*:} \
-    train.py
+    train.py'
