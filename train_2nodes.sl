@@ -2,9 +2,9 @@
 #SBATCH --partition=hgx
 #SBATCH --time=00-00:05:00
 #SBATCH --nodes=2
-#SBATCH --gpus-per-node=A100:3
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=32GB
+#SBATCH --gpus-per-node=A100:1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=4GB
 #SBATCH --output=logs/%j_%x.out
 #SBATCH --error=logs/%j_%x.out
 
@@ -20,7 +20,10 @@ conda deactivate
 conda activate ./venv
 
 # optional, used to peek under NCCL's hood
-export NCCL_DEBUG=INFO 
+export NCCL_DEBUG=INFO
+
+# export NCCL_SOCKET_IFNAME=ib0
+# export NCCL_IB_DISABLE=1
 
 # start training script
 

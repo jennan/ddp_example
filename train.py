@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     print(
         "### Worker info ###",
-        f"hostname: {os.environ['HOSTNAME']}",
+        f"node name: {os.environ.get('SLURMD_NODENAME', None)}",
         f"local rank: {os.environ['LOCAL_RANK']}",
         f"local world size: {os.environ['LOCAL_WORLD_SIZE']}",
         f"rank: {os.environ['RANK']}",
