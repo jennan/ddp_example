@@ -28,15 +28,17 @@ class Trainer:
         model: torch.nn.Module,
         train_data: DataLoader,
         optimizer: torch.optim.Optimizer,
-        gpu_id: int,
+        local_rank: int,
+        rank: int,
         save_every: int,
     ):
-        self.gpu_id = gpu_id
-        self.model = model.to(gpu_id)
+        self.local_rank = local_rank
+        self.rank = rank
+        self.model = model.to(local_rank)
         self.train_data = train_data
         self.optimizer = optimizer
         self.save_every = save_every
-        self.model = DistributedDataParallel(model, device_ids=[gpu_id])
+        self.model = DistributedDataParallel(model, device_ids=[local_rank])
 
     def _run_batch(self, source, targets):
         self.optimizer.zero_grad()
@@ -47,21 +49,21 @@ class Trainer:
 
     def _run_epoch(self, epoch):
         batch_size = len(next(iter(self.train_data))[0])
-        if self.gpu_id == 0:
+        if self.rank == 0:
             print(
-                f"[GPU{self.gpu_id}] Epoch {epoch} "
+                f"[GPU{self.rank}] Epoch {epoch} "
                 f"| Batchsize: {batch_size} "
                 f"| Steps: {len(self.train_data)}"
             )
 
         self.train_data.sampler.set_epoch(epoch)
         for source, targets in self.train_data:
-            source = source.to(self.gpu_id)
-            targets = targets.to(self.gpu_id)
+            source = source.to(self.local_rank)
+            targets = targets.to(self.local_rank)
             self._run_batch(source, targets)
 
     def _save_checkpoint(self, epoch):
-        assert self.gpu_id == 0, "this should not run on another rank than 0"
+        assert self.rank == 0, "this should not run on another rank than 0"
         ckp = self.model.module.state_dict()
         PATH = "checkpoint.pt"
         torch.save(ckp, PATH)
@@ -70,7 +72,7 @@ class Trainer:
     def train(self, max_epochs: int):
         for epoch in range(max_epochs):
             self._run_epoch(epoch)
-            if self.gpu_id == 0 and epoch % self.save_every == 0:
+            if self.rank == 0 and epoch % self.save_every == 0:
                 self._save_checkpoint(epoch)
 
 
@@ -127,7 +129,8 @@ def main():
     train_data = prepare_dataloader(dataset, args.batch_size)
 
     local_rank = int(os.environ["LOCAL_RANK"])
-    trainer = Trainer(model, train_data, optimizer, local_rank, args.save_every)
+    rank = int(os.environ["RANK"])
+    trainer = Trainer(model, train_data, optimizer, local_rank, rank, args.save_every)
 
     trainer.train(args.total_epochs)
 
