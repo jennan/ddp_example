@@ -33,16 +33,9 @@ export MASTER_PORT=$(python -c 'import socket; s=socket.socket(); s.bind(("", 0)
 echo "rendez-vous at $MASTER_ADDR:$MASTER_PORT"
 
 # TODO pass the number of available CPUs from Slurm
-# srun torchrun \
-#     --rdzv_id=$SLURM_JOB_ID \
-#     --rdzv_backend=c10d \
-#     --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
-#     --nnodes=$SLURM_JOB_NUM_NODES \
-#     --nproc_per_node=${SLURM_GPUS_PER_NODE#*:} \
-#     train.py
-
-srun bash -c 'python -m torch.distributed.launch \
-    --use_env \
+srun bash -c 'torchrun \
+    --rdzv_id=$SLURM_JOB_ID \
+    --rdzv_backend=static \
     --node_rank=$SLURM_PROCID \
     --master_addr=$MASTER_ADDR \
     --master_port=$MASTER_PORT \
