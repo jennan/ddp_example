@@ -1,10 +1,9 @@
 #!/bin/bash -e
-#SBATCH --job-name=ddp_train
 #SBATCH --partition=hgx
 #SBATCH --time=00-00:05:00
 #SBATCH --gpus-per-node=A100:4
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=32GB
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=16GB
 #SBATCH --output=logs/%j_%x.out
 #SBATCH --error=logs/%j_%x.out
 
