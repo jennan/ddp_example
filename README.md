@@ -41,7 +41,7 @@ The log files are saved in the `logs/` folder.
 
 ## Notes
 
-Rendez-vous address using SLURMD_NODENAME or
+- Rendez-vous address using SLURMD_NODENAME or
 
 ```
 master_addr=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
@@ -49,3 +49,8 @@ export MASTER_ADDR=$master_addr
 ```
 
 from https://gist.github.com/TengdaHan/1dd10d335c7ca6f13810fff41e809904?permalink_comment_id=3751671#gistcomment-3751671 (edited) 
+
+
+- The multi-nodes scripts uses a `static` rendez-vous backend.
+  The C10d rendez-vous backend was not working, nodes failing to find each other on the platform.
+  The reason was not clear and should be further investigated.
